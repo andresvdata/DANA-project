@@ -1,0 +1,109 @@
+---
+title: "Project"
+author: "Andres Viloria"
+date: "2022-10-27"
+output: pdf_document
+---
+#### Load the data
+```{r}
+df<-read.csv('googleplaystore.csv')
+```
+
+```{r}
+colSums((is.na(df)) | (df=='') | (df=='NaN'))
+```
+
+Now, we will replace '' and 'NaN' to null values
+
+
+```{r}
+df[df=='',]
+```
+
+
+
+```{r}
+df[df$Content.Rating=='',]
+df[df$App=='',]
+```
+
+```{r}
+df[df==""]<-NA
+df[(df=='NaN')]<-NA
+```
+
+
+```{r}
+colSums((is.na(df)) )
+```
+
+The reason why we replace 'Varies with device' value from the size column is because it represents more than 15% of whole dataframe and eliminating these values would represent a significant loss in data changing them on the other hand is a necessary step to convert the values for categorical to numeric. 
+
+```{r}
+df$Size
+as.numeric(gsub('M','',df$Size)) 
+```
+
+
+
+
+```{r}
+df$App<- as.character(df$App)
+df$Category<- as.factor(df$Category)
+df$Rating<- as.numeric(df$Rating)
+df$Reviews<- as.numeric(df$Reviews)
+```
+
+
+
+Let's check the null values in the dataframe
+
+```{r}
+sum(is.na(df))
+```
+
+
+```{r}
+sum(df=='')
+```
+
+```{r}
+summary(df)
+```
+
+
+#### reviewing the data
+
+```{r}
+
+```
+
+```{r}
+df$Size_converted<- gsub('M','',df$Size)
+
+"Varies with device"
+```
+
+```{r}
+#df$Size_converted
+
+```
+
+```{r}
+pairs(df[,]) ## correlation 
+
+cor(df$Rating,df$Reviews)
+```
+
+
+
+```{r}
+df$App<- as.character(df$App)
+df$Category<- as.factor(df$Category)
+df$Rating<- as.numeric(df$Rating)
+df$Reviews<- as.numeric(df$Reviews)
+df$Category<- as.factor(df$Category)
+df$Category<- as.factor(df$Category)
+df$Category<- as.factor(df$Category)
+```
+
