@@ -7,6 +7,7 @@ output: pdf_document
 #### Load the data
 ```{r}
 df<-read.csv('googleplaystore.csv')
+#View(df)
 ```
 
 ```{r}
@@ -17,25 +18,104 @@ Now, we will replace '' and 'NaN' to null values
 
 
 ```{r}
-df[df=='',]
-```
-
-
-
-```{r}
-df[df$Content.Rating=='',]
-df[df$App=='',]
-```
-
-```{r}
-df[df==""]<-NA
+df[df=='']<-NA
 df[(df=='NaN')]<-NA
+
 ```
+
+
+
+```{r}
+colSums((is.na(df)) )
+
+```
+
+
+NULL TREATMENT
+
+since  the null values of the attribute rating are higher than 10% of the sample. We cannot rid of these observations. So those values will be filled in.
+
+
+let's check the rating distribution by plotting box plot.
+
+```{r}
+boxplot(df$Rating)
+```
+let check how many rows are greater than 5
+```{r}
+mode(df$Rating)
+
+
+df$Rating[is.na(df$Rating)]<-4.4
+```
+
+
+```{r}
+df[df$Rating>5,]
+```
+A outlier was found. as it is only one, it can be removed.
+
+```{r}
+df<- df[df$Rating<=5,]
+length(df$Rating)
+```
+Now we have 10840 rows. Let check again the boxplot.
+
+```{r}
+boxplot(df$Rating)
+```
+
+As there are too many outliers, the mode was used for replacing the null values.
+
+
 
 
 ```{r}
 colSums((is.na(df)) )
 ```
+Once all null value of rating are replaced by the its mode, all others null values can be removed  due to are less than 1%.
+
+let's check the rows with any of he values in null.
+
+```{r}
+df[!complete.cases(df),]
+```
+let rid of them
+```{r}
+df<-na.omit(df)
+```
+
+
+# quality data
+
+
+Due to the price attribute format is incorrect, we should replace the dots(.) to 
+
+```{r}
+df$Price<-gsub('(\\$|,)','',df$Price)
+```
+
+
+```{r}
+df$Category<- as.factor(df$Category)
+df$Rating<- as.numeric(df$Rating)
+df$Reviews<- as.numeric(df$Reviews)
+df$Installs<- as.factor(df$Installs)
+
+df$Price<- as.numeric(df$Price)
+```
+
+```{r}
+colSums((is.na(df)) )
+```
+
+
+
+
+
+
+
+
 
 The reason why we replace 'Varies with device' value from the size column is because it represents more than 15% of whole dataframe and eliminating these values would represent a significant loss in data changing them on the other hand is a necessary step to convert the values for categorical to numeric. 
 
