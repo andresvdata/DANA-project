@@ -4,11 +4,15 @@ author: "Team 1"
 date: "2022-10-27"
 output: pdf_document
 ---
+
 #### Load the data
+
 ```{r}
 df<-read.csv('googleplaystore.csv')
 #View(df)
 ```
+
+
 
 ```{r}
 colSums((is.na(df)) | (df=='') | (df=='NaN'))
@@ -16,32 +20,28 @@ colSums((is.na(df)) | (df=='') | (df=='NaN'))
 
 Now, we will replace '' and 'NaN' to null values
 
-
 ```{r}
 df[df=='']<-NA
 df[(df=='NaN')]<-NA
-
 ```
-
-
 
 ```{r}
 colSums((is.na(df)) )
 
 ```
 
-
 NULL TREATMENT
 
-since  the null values of the attribute rating are higher than 10% of the sample. We cannot rid of these observations. So those values will be filled in.
-
+since the null values of the attribute rating are higher than 10% of the sample. We cannot rid of these observations. So those values will be filled in.
 
 let's check the rating distribution by plotting box plot.
 
 ```{r}
 boxplot(df$Rating)
 ```
+
 let check how many rows are greater than 5
+
 ```{r}
 mode(df$Rating)
 
@@ -49,16 +49,17 @@ mode(df$Rating)
 df$Rating[is.na(df$Rating)]<-4.4
 ```
 
-
 ```{r}
 df[df$Rating>5,]
 ```
+
 A outlier was found. as it is only one, it can be removed.
 
 ```{r}
 df<- df[df$Rating<=5,]
 length(df$Rating)
 ```
+
 Now we have 10840 rows. Let check again the boxplot.
 
 ```{r}
@@ -67,34 +68,31 @@ boxplot(df$Rating)
 
 As there are too many outliers, the mode was used for replacing the null values.
 
-
-
-
 ```{r}
 colSums((is.na(df)) )
 ```
-Once all null value of rating are replaced by the its mode, all others null values can be removed  due to are less than 1%.
+
+Once all null value of rating are replaced by the its mode, all others null values can be removed due to are less than 1%.
 
 let's check the rows with any of he values in null.
 
 ```{r}
 df[!complete.cases(df),]
 ```
+
 let rid of them
+
 ```{r}
 df<-na.omit(df)
 ```
 
-
 # quality data
 
-
-Due to the price attribute format is incorrect, we should replace the dots(.) to 
+Due to the price attribute format is incorrect, we should remove the dollar sign 
 
 ```{r}
 df$Price<-gsub('(\\$|,)','',df$Price)
 ```
-
 
 ```{r}
 df$Category<- as.factor(df$Category)
@@ -105,26 +103,13 @@ df$Installs<- as.factor(df$Installs)
 df$Price<- as.numeric(df$Price)
 ```
 
+Lets check if it remains the nulls.
+
 ```{r}
 colSums((is.na(df)) )
 ```
 
-
-
-
-
-
-
-
-
-The reason why we replace 'Varies with device' value from the size column is because it represents more than 15% of whole dataframe and eliminating these values would represent a significant loss in data changing them on the other hand is a necessary step to convert the values for categorical to numeric. 
-
-```{r}
-df$Size
-as.numeric(gsub('M','',df$Size)) 
-```
-
-
+The reason why we replace 'Varies with device' value from the size column is because it represents more than 15% of whole dataframe and eliminating these values would represent a significant loss in data changing them on the other hand is a necessary step to convert the values for categorical to numeric.
 
 
 ```{r}
@@ -132,9 +117,8 @@ df$App<- as.character(df$App)
 df$Category<- as.factor(df$Category)
 df$Rating<- as.numeric(df$Rating)
 df$Reviews<- as.numeric(df$Reviews)
+df$Price<- as.numeric(df$Price)
 ```
-
-
 
 Let's check the null values in the dataframe
 
@@ -144,46 +128,123 @@ sum(is.na(df))
 
 
 ```{r}
-sum(df=='')
-```
-
-```{r}
 summary(df)
 ```
 
 
-#### reviewing the data
+____________________
+
+
+
+question 1
+
+
+Which are the 5 most expensive apps in the play store dataset? 
 
 ```{r}
-
-```
-
-```{r}
-df$Size_converted<- gsub('M','',df$Size)
-
-"Varies with device"
-```
-
-```{r}
-#df$Size_converted
-
-```
-
-```{r}
-pairs(df[,]) ## correlation 
-
-cor(df$Rating,df$Reviews)
+df_top<-df[order(-df$Price),][1:5,]
+df_top
 ```
 
 
 
+
 ```{r}
-df$App<- as.character(df$App)
-df$Category<- as.factor(df$Category)
-df$Rating<- as.numeric(df$Rating)
-df$Reviews<- as.numeric(df$Reviews)
-df$Category<- as.factor(df$Category)
-df$Category<- as.factor(df$Category)
-df$Category<- as.factor(df$Category)
+barplot(table(df_top$Price,df_top$App))
+```
+
+
+Question 2
+
+•	How is the distribution of Rating? Can it be considered Normal distribution?
+```{r}
+hist(df$Rating, main='Histogram for Rating',xlab = 'Rating')
+```
+
+
+
+```{r}
+hist(df[df$Price!=0,]$Price)
+```
+
+```{r}
+t=10
+app_paid_lt<- df[(df$Price<t)&(df$Price!=0),]
+app_paid_gt<- df[(df$Price>t)&(df$Price!=0),]
+```
+
+
+```{r}
+table(df$Price)
+```
+
+```{r}
+quantile(df$Price,0.99)
+```
+
+
+```{r}
+hist(app_paid_lt$Price)
+```
+
+
+```{r}
+hist(app_paid_gt$Price)
+```
+
+```{r}
+boxplot(app_paid_lt$Price)
+```
+
+
+```{r}
+boxplot(df$Rating,horizontal = TRUE)
+```
+
+
+## 4 question
+
+•	Can any of the numerical variables describe the behaviour of the price tendency?
+
+Due the variable price is not representative enough, base on the last hypothesis the variaable choosen for this question is rating.
+
+The rest of numerical variables are :
+review 
+
+From this we have one hypothesis :
+Ho= review and rating do not have a linear correlation among all subjects in the population
+
+H1= Review and rating have a linear correlation among  all subjects in the population.
+
+
+```{r}
+price<- df[df$Price<200,]
+plot(app_paid_lt$Price~app_paid_lt$Reviews)
+```
+
+
+```{r}
+plot(df$Price~df$Reviews)
+l<- lm(df$Price~df$Rating)
+abline(l)
+```
+
+
+```{r}
+unique(df$Installs)
+```
+
+```{r}
+
+df$Installs_new<-gsub('(\\+|,)','',df$Installs)
+df$Installs_new<- as.integer(df$Installs_new)
+order(df$Installs_new,decreasing = TRUE )
+x<-table(df$Installs_new)
+barplot(x)
+```
+
+
+```{r}
+chisq.test(df$Category)
 ```
 
