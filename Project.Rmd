@@ -131,7 +131,6 @@ sum(is.na(df))
 summary(df)
 ```
 
-
 ____________________
 
 
@@ -204,7 +203,7 @@ boxplot(df$Rating,horizontal = TRUE)
 
 ## 4 question
 
-•	Can any of the numerical variables describe the behaviour of the price tendency?
+•	Can any of the numerical variables describe the behavior of the price tendency?
 
 Due the variable price is not representative enough, base on the last hypothesis the variaable choosen for this question is rating.
 
@@ -243,8 +242,15 @@ x<-table(df$Installs_new)
 barplot(x)
 ```
 
+# question 5: We are suppose to compute the chik square for category and installs.
 
 ```{r}
-chisq.test(df$Category)
+
+table(df$Category,df$Installs)
+
+```
+
+```{r}
+brea
 ```
 
