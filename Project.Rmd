@@ -127,6 +127,14 @@ sum(is.na(df))
 ```
 
 
+## duplicated:
+```{r}
+df_new<-df[duplicated(df),]
+```
+
+
+
+
 ```{r}
 summary(df)
 ```
@@ -188,8 +196,11 @@ hist(app_paid_lt$Price)
 
 
 ```{r}
-hist(app_paid_gt$Price)
+boxplot(app_paid_gt$Price)
 ```
+
+
+
 
 ```{r}
 boxplot(app_paid_lt$Price)
@@ -245,12 +256,10 @@ barplot(x)
 # question 5: We are suppose to compute the chik square for category and installs.
 
 ```{r}
-
 table(df$Category,df$Installs)
-
 ```
 
 ```{r}
-brea
+
 ```
 
