@@ -15,6 +15,12 @@ df<-read.csv('googleplaystore.csv')
 
 
 ```{r}
+df[df$Reviews==0 & is.na(df$Rating) ,]
+```
+
+
+
+```{r}
 colSums((is.na(df)) | (df=='') | (df=='NaN'))
 ```
 
@@ -34,80 +40,72 @@ NULL TREATMENT
 
 since the null values of the attribute rating are higher than 10% of the sample. We cannot rid of these observations. So those values will be filled in.
 
-let's check the rating distribution by plotting box plot.
-
-```{r}
-boxplot(df$Rating)
-```
-
-let check how many rows are greater than 5
-
-```{r}
-mode(df$Rating)
-
-
-df$Rating[is.na(df$Rating)]<-4.4
-```
-
-```{r}
-df[df$Rating>5,]
-```
-
-A outlier was found. as it is only one, it can be removed.
-
-```{r}
-df<- df[df$Rating<=5,]
-length(df$Rating)
-```
-
-Now we have 10840 rows. Let check again the boxplot.
-
-```{r}
-boxplot(df$Rating)
-```
 
 As there are too many outliers, the mode was used for replacing the null values.
+```{r}
+mode(df$Rating[na.omit(df$Rating)]) #mode is  4.4
+
+# create a originla copy of rating variable
+df$Rating_original<-df$Rating 
+
+df$Rating[is.na(df$Rating)]<-4.4
+df$Rating_original[is.na(df$Rating_original)]<-'N'
+```
+
+
 
 ```{r}
 colSums((is.na(df)) )
+
 ```
 
-Once all null value of rating are replaced by the its mode, all others null values can be removed due to are less than 1%.
-
-let's check the rows with any of he values in null.
-
+In total there are 12 rows with missing values which represents less than 1% of the data.
 ```{r}
-df[!complete.cases(df),]
+12/length(col(df))*100
 ```
 
-let rid of them
+
+As the null remaining are too small compared to the dataset. there missing value will be excluded using listwise method.
 
 ```{r}
 df<-na.omit(df)
 ```
 
+```{r}
+colSums((is.na(df)) )
+```
+
+Let's check the null values in the dataframe.
+
+There are not more missing values.
 # quality data
 
 Due to the price attribute format is incorrect, we should remove the dollar sign 
 
+##price
 ```{r}
 df$Price<-gsub('(\\$|,)','',df$Price)
 ```
+
+##installs
+
+```{r}
+df$Installs<-gsub('(\\+|,)','',df$Installs)
+```
+
+
+
 
 ```{r}
 df$Category<- as.factor(df$Category)
 df$Rating<- as.numeric(df$Rating)
 df$Reviews<- as.numeric(df$Reviews)
-df$Installs<- as.factor(df$Installs)
+df$Installs<- as.numeric(df$Installs)
 
 df$Price<- as.numeric(df$Price)
 ```
 
-Lets check if it remains the nulls.
 
-```{r}
-colSums((is.na(df)) )
-```
 
 The reason why we replace 'Varies with device' value from the size column is because it represents more than 15% of whole dataframe and eliminating these values would represent a significant loss in data changing them on the other hand is a necessary step to convert the values for categorical to numeric.
 
@@ -120,27 +118,168 @@ df$Reviews<- as.numeric(df$Reviews)
 df$Price<- as.numeric(df$Price)
 ```
 
-Let's check the null values in the dataframe
 
-```{r}
-sum(is.na(df))
-```
 
 
 ## duplicated:
 ```{r}
-df_new<-df[duplicated(df),]
+df_new<-df[!duplicated(df),]
+df_new
+```
+
+
+These are the new results
+
+
+```{r}
+summary(df_new)
+```
+
+____________________
+
+
+Question 2
+
+•	How is the distribution of Rating? Can it be considered Normal distribution?
+```{r}
+hist(df_new$Rating, main='Histogram for Rating',xlab = 'Rating')
+```
+
+
+
+
+
+Question 3
+
+As the price is a numerical variable we can describe the data by its central tendency, quartiles, variation and shape.
+From the boxplot we can get a general view to describe the data:
+
+```{r}
+boxplot(df_new$Price)
+```
+
+This distribution its really right-skewed
+```{r}
+summary(df_new$Price)
+```
+This distribution shows various outliers.
+
+```{r}
+hist(df_new$Price)
+```
+distribution is right-skewed . there are many values in cero, they come from the free apps. Price variable should be analyzed for only app that are paid considering that for free apps will be always cero.
+As there are app paid and not paid. This variable make sense analyze it only for apps are paid.
+
+```{r}
+pie(table(df_new$Type))
+```
+
+```{r}
+df_new_paid=df_new[df_new$Type!='Free',]
+df_new_free=df_new[df_new$Type=='Free',]
+boxplot(df_new_paid$Price)
+```
+
+
+
+Even though the distribution is better, the presence of outliers are really high.
+
+
+
+But first, lets check the treeshold to consider a value outlier to analize the ouliers...
+
+```{r}
+limit<-summary(df_new_paid$Price)[5]+1.5*IQR(df_new_paid$Price)
+limit
 ```
 
 
 
 
 ```{r}
-summary(df)
+df_new_paid_l<- df_new_paid[(df_new_paid$Price<=limit),]
+df_new_paid_g<- df_new_paid[(df_new_paid$Price>limit),]
+
 ```
 
-____________________
 
+```{r}
+df_new[df_new$Reviews==0,]
+```
+
+
+```{r}
+hist(df_new_paid_g$Price)
+```
+From the values considered ouliers from the distribution of paid apps, there are extreme values around 400. 
+
+
+
+## fake apps
+```{r}
+df_new_paid_g[order(df_new_paid_g$Price,decreasing = TRUE),]
+```
+It looks like these apps are 'fake apps'. They do not do anything. They just cost a lot of money.
+between  "I'm Rich - Trump Edition" to "I am rich VIP" from previous table can be considerd fake apps, how about apps high than 10 less than 200?
+
+
+```{r}
+df_new_paid_g_l200<- df_new_paid_g[df_new_paid_g$Price<=200,]
+df_new_paid_g_l200<-df_new_paid_g_l200[order(df_new_paid_g_l200$Price,decreasing = TRUE),]
+df_new_paid_g_l200
+```
+## fake and unvaluable apps
+Among these apps, there is still one meme app 'I am rich Person', while the others looks to be 'serious apps'. Considering  some of these apps do not have any reviews or rating, the rest of them will be included.
+
+```{r}
+df_new_paid_g_okOutliers<- df_new_paid_g_l200[df_new_paid_g_l200$Reviews!=0 & df_new_paid_g_l200$Rating_original!='N'     ,]
+df_new_paid_g_okOutliers
+```
+
+Once identified  the outliers, lets merge the data to data under price of 10.
+
+```{r}
+df_new_paid_clean<- merge(df_new_paid_g_okOutliers,df_new_paid_l,all=TRUE)
+df_new_clean<- merge(df_new_paid_clean,df_new_free,all=TRUE)
+df_new_clean
+```
+
+
+
+```{r}
+hist(df_new_clean$Rating, main='Histogram for Rating',xlab = 'Rating')
+```
+
+# Question 4 
+
+```{r}
+plot(log(df_new_clean$Installs)~df_new_clean$Reviews)
+
+```
+
+Remove the oulierts
+
+
+```{r}
+
+df_new_paid_clean<-df_new_paid_clean[df_new_paid_clean$Price<40,]
+
+boxplot(df_new_paid_clean$Price,horizontal = TRUE)
+```
+Better distribution. 
+
+```{r}
+df_new_paid_clean<-df_new_paid_clean[df_new_paid_clean$Reviews<500000,]
+
+modelo <- lm (df_new_paid_clean$Reviews ~ log(df_new_paid_clean$Rating )
+summary(modelo)
+```
+
+```{r}
+plot(log(df$Reviews) ~ df$Installs  )
+abline(modelo)
+cor(df_new_paid_clean$Rating,df_new_paid_clean$Reviews)
+```
 
 
 question 1
@@ -149,7 +288,27 @@ question 1
 Which are the 5 most expensive apps in the play store dataset? 
 
 ```{r}
-df_top<-df[order(-df$Price),][1:5,]
+df_top<-df_new_clean[order(-df_new_clean$Price),][1:20,]
+df_top
+```
+
+Most expensive apps shows similar patron, the name has the word "Rich". These apps shouldnt be considered as real apps for the analyzis.
+So the fakes app needs to be identified.
+
+Considering that the most expensive apps relates the word "Rich" are more expensive than $200, the rest of app will be considered to answer this question and to answer subsequent questions.
+
+These expensive values represent only 0.009%, so they can be deleted.
+```{r}
+length(df_new[df_new$Price<=200,])/length(col(df_new))*100
+```
+
+
+```{r}
+df_new<-df_new[df_new$Price<=200,]
+```
+
+```{r}
+df_top<-df_new[order(-df_new$Price),][1:20,]
 df_top
 ```
 
@@ -157,69 +316,24 @@ df_top
 
 
 ```{r}
-barplot(table(df_top$Price,df_top$App))
+mean(df_new$Rating)
 ```
-
-
-Question 2
-
-•	How is the distribution of Rating? Can it be considered Normal distribution?
 ```{r}
-hist(df$Rating, main='Histogram for Rating',xlab = 'Rating')
-```
-
-
-
-```{r}
-hist(df[df$Price!=0,]$Price)
+median(df_new$Rating)
 ```
 
 ```{r}
-t=10
-app_paid_lt<- df[(df$Price<t)&(df$Price!=0),]
-app_paid_gt<- df[(df$Price>t)&(df$Price!=0),]
+sd(df_new$Rating)
 ```
 
-
-```{r}
-table(df$Price)
-```
-
-```{r}
-quantile(df$Price,0.99)
-```
-
-
-```{r}
-hist(app_paid_lt$Price)
-```
-
-
-```{r}
-boxplot(app_paid_gt$Price)
-```
-
-
-
-
-```{r}
-boxplot(app_paid_lt$Price)
-```
-
-
-```{r}
-boxplot(df$Rating,horizontal = TRUE)
-```
 
 
 ## 4 question
 
 •	Can any of the numerical variables describe the behavior of the price tendency?
 
-Due the variable price is not representative enough, base on the last hypothesis the variaable choosen for this question is rating.
 
-The rest of numerical variables are :
-review 
+
 
 From this we have one hypothesis :
 Ho= review and rating do not have a linear correlation among all subjects in the population
@@ -228,21 +342,32 @@ H1= Review and rating have a linear correlation among  all subjects in the popul
 
 
 ```{r}
-price<- df[df$Price<200,]
-plot(app_paid_lt$Price~app_paid_lt$Reviews)
+app_paid[c("Price", "Reviews")]
 ```
 
 
 ```{r}
-plot(df$Price~df$Reviews)
-l<- lm(df$Price~df$Rating)
+cor(df_new_clean$Reviews,df_new_clean$Installs)
+plot(df$x, df$y, pch=19, xlim=c(0,30), ylim=c(0,150), main='Custom Axes')
+#library(ggplot2)
+#ggplot(subset(app_paid,aes(x=Price,y=Reviews)))+ geom_point()+scale_x_continuous(trans='log10')
+```
+there are outlierts for reviews
+
+```{r}
+summary(df_new$Reviews)
+```
+
+
+
+
+```{r}
+plot(df$Price~log(df$Reviews))
+l<- lm(df$Price~df$Reviews)
 abline(l)
 ```
 
 
-```{r}
-unique(df$Installs)
-```
 
 ```{r}
 
@@ -256,7 +381,7 @@ barplot(x)
 # question 5: We are suppose to compute the chik square for category and installs.
 
 ```{r}
-table(df$Category,df$Installs)
+table(df_new$Category,df_new$Installs)
 ```
 
 ```{r}
