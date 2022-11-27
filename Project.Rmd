@@ -245,52 +245,55 @@ df_new_clean
 ```
 
 
-
+real price distribution . right-sweded
 ```{r}
-hist(df_new_clean$Rating, main='Histogram for Rating',xlab = 'Rating')
+boxplot(df_new_clean[df_new_clean$Type=='Paid',]$Price, main='Histogram for Price',xlab = 'Price')
 ```
 
 # Question 4 
 
 ```{r}
-plot(log(df_new_clean$Installs)~df_new_clean$Reviews)
+data_model<-df_new_clean[df_new_clean$Reviews>0 & df_new_clean$Installs>0,]
+
+plot(data_model$Installs~data_model$Reviews)
+
+```
+the variables seems to have logaritmict relation ship.
+
+```{r}
+plot(log(data_model$Installs)~log(data_model$Reviews))
 
 ```
 
-Remove the oulierts
 
 
 ```{r}
-
-df_new_paid_clean<-df_new_paid_clean[df_new_paid_clean$Price<40,]
-
-boxplot(df_new_paid_clean$Price,horizontal = TRUE)
-```
-Better distribution. 
-
-```{r}
-df_new_paid_clean<-df_new_paid_clean[df_new_paid_clean$Reviews<500000,]
-
-modelo <- lm (df_new_paid_clean$Reviews ~ log(df_new_paid_clean$Rating )
+modelo<-lm(log(data_model$Installs)~log(data_model$Reviews),)
 summary(modelo)
 ```
 
+
+
+
 ```{r}
-plot(log(df$Reviews) ~ df$Installs  )
+plot(log(data_model$Installs)~log(data_model$Reviews))
 abline(modelo)
-cor(df_new_paid_clean$Rating,df_new_paid_clean$Reviews)
 ```
 
 
-question 1
+
+
+question 3
 
 
 Which are the 5 most expensive apps in the play store dataset? 
 
 ```{r}
-df_top<-df_new_clean[order(-df_new_clean$Price),][1:20,]
+df_top<-df_new_clean[order(-df_new_clean$Price),][1:9,]
 df_top
 ```
+
+
 
 Most expensive apps shows similar patron, the name has the word "Rich". These apps shouldnt be considered as real apps for the analyzis.
 So the fakes app needs to be identified.
@@ -307,10 +310,7 @@ length(df_new[df_new$Price<=200,])/length(col(df_new))*100
 df_new<-df_new[df_new$Price<=200,]
 ```
 
-```{r}
-df_top<-df_new[order(-df_new$Price),][1:20,]
-df_top
-```
+
 
 
 
@@ -354,37 +354,7 @@ plot(df$x, df$y, pch=19, xlim=c(0,30), ylim=c(0,150), main='Custom Axes')
 ```
 there are outlierts for reviews
 
-```{r}
-summary(df_new$Reviews)
-```
 
-
-
-
-```{r}
-plot(df$Price~log(df$Reviews))
-l<- lm(df$Price~df$Reviews)
-abline(l)
-```
-
-
-
-```{r}
-
-df$Installs_new<-gsub('(\\+|,)','',df$Installs)
-df$Installs_new<- as.integer(df$Installs_new)
-order(df$Installs_new,decreasing = TRUE )
-x<-table(df$Installs_new)
-barplot(x)
-```
 
 # question 5: We are suppose to compute the chik square for category and installs.
-
-```{r}
-table(df_new$Category,df_new$Installs)
-```
-
-```{r}
-
-```
 
