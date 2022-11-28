@@ -283,12 +283,11 @@ The chi square can be computed.
 chisq.test(Typ_ContR_freq[,2:4])
 ```
 
-As
+As,
 H0 = The content rating and type are independent
 H1 = The content rating and type are not independent
 
 
 
 
-After computing the chi square we can reject the null hypothesis as the leve of condicen is 0.05 and conclude the variables are not independent.
-Also as the content rating change the type could change.
+After computing the chi-square, we can reject the null hypothesis as the value of X2 is 8.1507 which is greater than the decision point 5.99 with degree of freedom 2 and level of confidence 0.05 .We can conclude the variables are not independent. Also, as the content rating changes the type variable could change
